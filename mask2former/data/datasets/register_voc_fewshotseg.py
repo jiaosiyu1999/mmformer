@@ -98,7 +98,7 @@ def register_all_pascal(root, split, BASE_CLASS_NAMES, NOVEL_CLASS_NAMES):
         )
 
 
-_root = '/home/siyujiao/data/pascal/VOCdevkit/VOC2012/'
+_root = 'path-to-pascal'
 
 for split in range(4):
     class_list, sub_list, sub_val_list = shot_generate(split, dataname='pascal')
