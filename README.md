@@ -8,7 +8,7 @@
 #### Build Dependencies
 
 ```
-cd model/ops/
+cd mask2former/modeling/pixel_decoder/ops/
 bash make.sh
 cd ../../
 ```
