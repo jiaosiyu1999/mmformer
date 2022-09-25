@@ -1,4 +1,4 @@
-# mmformer
+# Mask Matching Transformer for Few-Shot Segmentation
 
 
 # Usage
