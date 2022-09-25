@@ -10,7 +10,6 @@
 ```
 cd mask2former/modeling/pixel_decoder/ops/
 bash make.sh
-cd ../../
 ```
 
 **Note**: Using the latest version of detectron2 may cause weight loading failure. Please use the following command to return the version:
