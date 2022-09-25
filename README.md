@@ -17,6 +17,10 @@ bash make.sh
 git reset --hard 932f25ad38768d
 ```
 
+### List Preparation
+
++ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `list`
+
 ### Data Preparation
 
 + Please refer to [CyCTR](https://github.com/YanFangCS/CyCTR-Pytorch) to prepare the datasets 
