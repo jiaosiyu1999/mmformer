@@ -6,11 +6,20 @@
 
 
 #### Build Dependencies
+
 ```
-cd model/ops/
+cd mask2former/modeling/pixel_decoder/ops/
 bash make.sh
-cd ../../
 ```
+
+**Note**: Using the latest version of detectron2 may cause weight loading failure. Please use the following command to return the version:
+```
+git reset --hard 932f25ad38768d
+```
+
+### List Preparation
+
++ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `list`
 
 ### Data Preparation
 
