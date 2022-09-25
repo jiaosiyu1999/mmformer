@@ -6,10 +6,16 @@
 
 
 #### Build Dependencies
+
 ```
 cd model/ops/
 bash make.sh
 cd ../../
+```
+
+**Note**: Using the latest version of detectron2 may cause weight loading failure. Please use the following instructions to return the version:
+```
+git reset --hard 932f25ad38768d
 ```
 
 ### Data Preparation
