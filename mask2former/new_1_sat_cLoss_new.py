@@ -16,11 +16,9 @@ from detectron2.utils.memory import retry_if_cuda_oom
 from .modeling.criterion import SetCriterion
 from .modeling.matcher import HungarianMatcher
 from .modeling.fewshot_loss import WeightedDiceLoss
-from .modeling.transformer_decoder.position_encoding import PositionEmbeddingSine
 from .modeling.feature_alignment.self_align import MySelfAlignLayer
 from .modeling.feature_alignment.cross_align import CrossAT
-
-
+from .modeling.transformer_decoder.position_encoding import PositionEmbeddingSine
 
 @META_ARCH_REGISTRY.register()
 class new_1_sat_cLoss_new(nn.Module):
@@ -96,8 +94,15 @@ class new_1_sat_cLoss_new(nn.Module):
         self.register_buffer("pixel_mean", torch.Tensor(pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", torch.Tensor(pixel_std).view(-1, 1, 1), False)
 
+        # additional args
+        self.semantic_on = semantic_on
+        self.instance_on = instance_on
+        self.panoptic_on = panoptic_on
+        self.test_topk_per_image = test_topk_per_image
 
-        # few shot args:
+        if not self.semantic_on:
+            assert self.sem_seg_postprocess_before_inference
+
         self.shot = shot
         self.fewshot_weight = fewshot_weight
         # self.crossat_final = CrossAT_final(256*4, hidden_dim = 256*4)
@@ -109,7 +114,7 @@ class new_1_sat_cLoss_new(nn.Module):
             self.add_module(f'conv_{i}', nn.Conv2d(inc, 256, kernel_size=1, stride=1, padding=0, bias=False))
             i = i + 1
 
-        # self.add_module(f'crossat_{i}', CrossAT(256, nhead = 2, pre_norm = pre_norm))
+        self.add_module(f'crossat_{i}', CrossAT(256, nhead = 2, pre_norm = pre_norm))
 
         self.fc1 = nn.Linear(num_queries, num_queries*5)
         self.relu = nn.ReLU()
@@ -196,12 +201,29 @@ class new_1_sat_cLoss_new(nn.Module):
 
     def forward(self, batched_inputs):
         """
-        batched_inputs: a list, batched outputs of :class:`DatasetMapper`.
-                * "image": Tensor, image in (C, H, W) format.
-                * "support_img": Tensor, image in (k, C, H, W) format.
-                * "label": Tensor, image in (H, W) format.
-                * "sup_label": Tensor, image in (k, C, H, W) format.
-                   
+        Args:
+            batched_inputs: a list, batched outputs of :class:`DatasetMapper`.
+                Each item in the list contains the inputs for one image.
+                For now, each item in the list is a dict that contains:
+                   * "image": Tensor, image in (C, H, W) format.
+                   * "instances": per-region ground truth
+                   * Other information that's included in the original dicts, such as:
+                     "height", "width" (int): the output resolution of the model (may be different
+                     from input resolution), used in inference.
+        Returns:
+            list[dict]:
+                each dict has the results for one image. The dict contains the following keys:
+
+                * "sem_seg":
+                    A Tensor that represents the
+                    per-pixel segmentation prediced by the head.
+                    The prediction has shape KxHxW that represents the logits of
+                    each class for each pixel.
+                * "panoptic_seg":
+                    A tuple that represent panoptic output
+                    panoptic_seg (Tensor): of shape (height, width) where the values are ids for each segment.
+                    segments_info (list[dict]): Describe each segment in `panoptic_seg`.
+                        Each dict contains keys "id", "category_id", "isthing".
         """
         images = [x["image"].to(self.device) for x in batched_inputs]
         images = [(x - self.pixel_mean) / self.pixel_std for x in images]
@@ -307,7 +329,7 @@ class new_1_sat_cLoss_new(nn.Module):
 
         if self.training:
 
-            # label --> generate cross-align loss
+            # label
             label = [x["label"].to(self.device) for x in batched_inputs]   # bs*h*w
             bs = len(label)
             for i in range(bs):
@@ -331,20 +353,59 @@ class new_1_sat_cLoss_new(nn.Module):
             iou_label = torch.cat([torch.zeros(bs, 1), torch.ones(bs, 1)], dim = -1).to(ious.device)
 
             em = torch.cat([bg.unsqueeze(-1), fg.unsqueeze(-1)], dim = -1)
-            losses_for_co =  self.ranking(em, iou_label)
+            losses_for_cat =  self.ranking(em, iou_label)
 
 
             losses = {}
             losses_for_fewshot = self.criterion_for_fewshot(out_all, labels) 
             losses["fewshot_loss"] = losses_for_fewshot * self.fewshot_weight
-            losses["cat_loss"] = losses_for_co * self.fewshot_weight * 0.6
+            losses["cat_loss"] = losses_for_cat * self.fewshot_weight * 0.6
 
             return losses
         else:
             processed_results = {"few_shot_result": out_all}
 
+            # savepath = '/home/siyujiao/few_shot_seg/2branch/z/'
+            # if not os.path.exists(savepath):
+            #     os.makedirs(savepath)
+
+            # subcls_lists = [x['subcls_list'] for x in batched_inputs]
+            # im_dirs = [x["file_name"].split('/')[-1].split('.')[0] for x in batched_inputs]
+            # for subcls_list, im_dir, mask_pred_result in zip(subcls_lists, im_dirs, mask_pred_results):
+            #     # print(subcls_list, subcls_list[0], type(subcls_list[0]), str(subcls_list[0]))
+            #     savepath_k = os.path.join(savepath, str(subcls_list[0]), im_dir)
+            #     if not os.path.exists(savepath_k):
+            #         os.makedirs(savepath_k)
+
+            #     img = cv2.imread('/home/siyujiao/data/pascal/VOCdevkit/VOC2012/JPEGImages/' + im_dir + '.jpg')
+            #     cv2.imwrite(os.path.join(savepath_k, im_dir + '.jpg'), img)
+            #     cv2.imwrite(os.path.join(savepath_k, im_dir + '.png'), out.cpu().numpy()*255)
+
+            #     os.makedirs(os.path.join(savepath_k, 'masks'))
+            #     for i in range(mask_pred_result.shape[0]):
+            #         cv2.imwrite(os.path.join(savepath_k, 'masks', str(i) + '.png'), mask_pred_result[i].cpu().numpy()*255)
+                    
             return processed_results
 
+    def prepare_targets(self, targets, images):
+        h, w = images.tensor.shape[-2:]
+        # h = h * 2
+        new_targets = []
+        for targets_per_image in targets:
+            # pad gt
+            gt_masks = targets_per_image.gt_masks
+            padded_masks = torch.zeros(
+                (gt_masks.shape[0], h, w), dtype=gt_masks.dtype, device=gt_masks.device
+            )
+            padded_masks[:, : gt_masks.shape[1], : gt_masks.shape[2]] = gt_masks
+            # print(targets_per_image.gt_classes, 'targets_per_image.gt_classes')
+            new_targets.append(
+                {
+                    "labels": targets_per_image.gt_classes,
+                    "masks": padded_masks,
+                }
+            )
+        return new_targets
 
     def get_iou(self, pred, target):
         # pred = pred.sigmoid() 

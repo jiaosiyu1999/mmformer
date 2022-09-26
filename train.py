@@ -11,7 +11,7 @@ It also includes fewer abstraction, therefore is easier to add custom logic.
 
 import logging
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '7'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 from collections import OrderedDict
 import copy
 import itertools

@@ -22,5 +22,5 @@ from .new_1_sat_cLoss_new import new_1_sat_cLoss_new
 
 from .test_time_augmentation import SemanticSegmentorWithTTA
 # evaluation
-from .evaluation.instance_evaluation import InstanceSegEvaluator
+# from .evaluation.instance_evaluation import InstanceSegEvaluator
 from .evaluation.fewshot_sem_seg_evaluation import FewShotSemSegEvaluator
