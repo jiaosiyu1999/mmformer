@@ -68,7 +68,7 @@ For example
 
 
 ### Test Only
-Modify `eval.yaml` file (`DATASETS.SPLIT` and `MODEL.WEIGHTS`)
+Modify `eval.yaml` file (`DATASETS.SPLIT`, `MODEL.META_ARCHITECTURE` and `MODEL.WEIGHTS`)
 Run the following command: 
 ```
     python test_.py --config-file configs/DATASET/eval.yaml --num-gpus 1 --eval-only
