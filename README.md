@@ -62,7 +62,7 @@ For example
 
 2. Modify `DATASETS.SPLIT` and `MODEL.WEIGHTS` in `configs/coco/step2.yaml` and run this command for training **step2** of COCO: 
 ```
-    python train.py --config-file configs/coco/step2.yaml --num-gpus 1
+    python train_step2.py --config-file configs/coco/step2.yaml --num-gpus 1
 ```
 
 
@@ -71,12 +71,12 @@ For example
 Modify `eval.yaml` file (`DATASETS.SPLIT`, `MODEL.META_ARCHITECTURE` and `MODEL.WEIGHTS`)
 Run the following command: 
 ```
-    python test_.py --config-file configs/DATASET/eval.yaml --num-gpus 1 --eval-only
+    python test.py --config-file configs/DATASET/eval.yaml --num-gpus 1 --eval-only
 ```
 
 For example, 
 ```
-    python test_.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
+    python test.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
 ```
 
 ### Pretrained models
