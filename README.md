@@ -19,7 +19,7 @@ git reset --hard 932f25ad38768d
 
 ### List Preparation
 
-+ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `list`
++ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `./list/`
 
 ### Data Preparation
 
@@ -62,21 +62,21 @@ For example
 
 2. Modify `DATASETS.SPLIT` and `MODEL.WEIGHTS` in `configs/coco/step2.yaml` and run this command for training **step2** of COCO: 
 ```
-    python train.py --config-file configs/coco/step2.yaml --num-gpus 1
+    python train_step2.py --config-file configs/coco/step2.yaml --num-gpus 1
 ```
 
 
 
 ### Test Only
-Modify `eval.yaml` file (`DATASETS.SPLIT` and `MODEL.WEIGHTS`)
+Modify `eval.yaml` file (`DATASETS.SPLIT`, `MODEL.META_ARCHITECTURE` and `MODEL.WEIGHTS`)
 Run the following command: 
 ```
-    python test_.py --config-file configs/DATASET/eval.yaml --num-gpus 1 --eval-only
+    python test.py --config-file configs/DATASET/eval.yaml --num-gpus 1 --eval-only
 ```
 
 For example, 
 ```
-    python test_.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
+    python test.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
 ```
 
 ### Pretrained models
