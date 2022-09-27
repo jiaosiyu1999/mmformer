@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# Modified by Bowen Cheng from: https://github.com/bowenc0221/boundary-iou-api/blob/master/tools/coco_instance_evaluation.py
-
-"""
-Evaluation for COCO val2017:
-python ./tools/coco_instance_evaluation.py \
-    --gt-json-file COCO_GT_JSON \
-    --dt-json-file COCO_DT_JSON
-"""
 import argparse
 import json
 

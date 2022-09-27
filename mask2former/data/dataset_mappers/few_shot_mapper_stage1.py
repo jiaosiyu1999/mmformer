@@ -16,14 +16,14 @@ from detectron2.structures import BitMasks, Instances
 
 from mask2former.data.utils import *
 from torchvision import transforms
-import mask2former.data.transforms as tr
+# import mask2former.data.transforms as tr
 from PIL import Image
 
-__all__ = ["FewShotDatasetMapper_ori"]
+__all__ = ["FewShotDatasetMapper_stage1"]
 
 
 
-class FewShotDatasetMapper_ori:
+class FewShotDatasetMapper_stage1:
     """
     A callable which takes a dataset dict in Detectron2 Dataset format,
     and map it into a format used by MaskFormer for semantic segmentation.
@@ -192,29 +192,11 @@ class FewShotDatasetMapper_ori:
 
         image_shape = (image.shape[-2], image.shape[-1])  # h, w
 
-        # Pytorch's dataloader is efficient on torch.Tensor due to shared-memory,
-        # but not efficient on large generic data structures due to the use of pickle & mp.Queue.
-        # Therefore it's important to use torch.Tensor.
         dataset_dict["image"] = image  # 3*h*w
         dataset_dict['label'] = torch.from_numpy(label).float()
         dataset_dict['subcls_list'] = subcls_list
         instances = self.instance(sem_seg_gt, image_shape)
         dataset_dict["instances"] = instances
-
-        # s_xs = support_image_list
-        # s_ys = support_label_list
-        # s_x = s_xs[0].unsqueeze(0)
-        # for i in range(1, self.shot):
-        #     s_x = torch.cat([s_xs[i].unsqueeze(0), s_x], 0)
-        # s_y = s_ys[0].unsqueeze(0)
-        # for i in range(1, self.shot):
-        #     s_y = torch.cat([s_ys[i].unsqueeze(0), s_y], 0)
-        # s_xs = s_x
-        # s_ys = s_y
-
-        # dataset_dict['support_img'] =  s_xs   # shot*3*h*w
-        # dataset_dict['support_label'] =  s_ys # shot*h*w
-
 
         return dataset_dict
 

@@ -16,8 +16,8 @@ from .evaluation.fewshot_sem_seg_evaluation import (
 
 # models
 
-from .mask2_oracle_ori_fsloss import mask2_oracle_ori_fsloss
-from .new_1_sat_cLoss_new import new_1_sat_cLoss_new 
+from .Potential_Objects_Segmenter import POS
+from .MM_Former import MMFormer 
 
 
 from .test_time_augmentation import SemanticSegmentorWithTTA

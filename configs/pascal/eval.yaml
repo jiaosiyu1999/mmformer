@@ -1,4 +1,4 @@
-# python test_.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
+# python test.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
 
 
 _BASE_: Base-VOC11K-20.yaml
@@ -10,7 +10,7 @@ DATASETS:
 MODEL:
   BACKBONE:
     FREEZE_AT: 0
-  META_ARCHITECTURE: "new_1_sat_cLoss_new"    # mask2_oracle_ori  
+  META_ARCHITECTURE: "POS"    # POS / MMFormer  
   WEIGHTS: pretrained-model-path
   
   SEM_SEG_HEAD:

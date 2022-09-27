@@ -54,7 +54,7 @@ def make_dataset(split, dataname, istrain = True):
     assert split in [0, 1, 2, 3, 10, 11, 999]
 
     if not os.path.isfile(split_data_list):
-        raise (RuntimeError("Image list file do not exist: " + data_list + "\n"))
+        raise (RuntimeError("Image list file do not exist: " + split_data_list + "\n"))
 
     # split_data_list = data_list.split('.')[0] + '_split{}'.format(split) + '.pth'
     if os.path.isfile(split_data_list):

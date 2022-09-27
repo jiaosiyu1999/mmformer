@@ -19,11 +19,7 @@ from .modeling.fewshot_loss import WeightedDiceLoss
 
 
 @META_ARCH_REGISTRY.register()
-class mask2_oracle_ori_fsloss(nn.Module):
-    """
-    Main class for mask classification semantic segmentation architectures.
-    """
-
+class POS(nn.Module):
     @configurable
     def __init__(
         self,
@@ -40,39 +36,12 @@ class mask2_oracle_ori_fsloss(nn.Module):
         pixel_mean: Tuple[float],
         pixel_std: Tuple[float],
         # inference
-        semantic_on: bool,
-        panoptic_on: bool,
-        instance_on: bool,
-        test_topk_per_image: int,
 
         shot: int,
         fewshot_weight: float,
 
     ):
-        """
-        Args:
-            backbone: a backbone module, must follow detectron2's backbone interface
-            sem_seg_head: a module that predicts semantic segmentation from backbone features
-            criterion: a module that defines the loss
-            num_queries: int, number of queries
-            object_mask_threshold: float, threshold to filter query based on classification score
-                for panoptic segmentation inference
-            overlap_threshold: overlap threshold used in general inference for panoptic segmentation
-            metadata: dataset meta, get `thing` and `stuff` category names for panoptic
-                segmentation inference
-            size_divisibility: Some backbones require the input height and width to be divisible by a
-                specific integer. We can use this to override such requirement.
-            sem_seg_postprocess_before_inference: whether to resize the prediction back
-                to original input size before semantic segmentation inference or after.
-                For high-resolution dataset like Mapillary, resizing predictions before
-                inference will cause OOM error.
-            pixel_mean, pixel_std: list or tuple with #channels element, representing
-                the per-channel mean and std to be used to normalize the input image
-            semantic_on: bool, whether to output semantic segmentation prediction
-            instance_on: bool, whether to output instance segmentation prediction
-            panoptic_on: bool, whether to output panoptic segmentation prediction
-            test_topk_per_image: int, instance segmentation parameter, keep topk instances per image
-        """
+
         super().__init__()
         self.backbone = backbone
         self.sem_seg_head = sem_seg_head
@@ -91,14 +60,6 @@ class mask2_oracle_ori_fsloss(nn.Module):
         self.register_buffer("pixel_std", torch.Tensor(pixel_std).view(-1, 1, 1), False)
 
         # additional args
-        self.semantic_on = semantic_on
-        self.instance_on = instance_on
-        self.panoptic_on = panoptic_on
-        self.test_topk_per_image = test_topk_per_image
-
-        if not self.semantic_on:
-            assert self.sem_seg_postprocess_before_inference
-
         self.shot = shot
         self.fewshot_weight = fewshot_weight
 
@@ -163,10 +124,6 @@ class mask2_oracle_ori_fsloss(nn.Module):
             "pixel_mean": cfg.MODEL.PIXEL_MEAN,
             "pixel_std": cfg.MODEL.PIXEL_STD,
             # inference
-            "semantic_on": cfg.MODEL.MASK_FORMER.TEST.SEMANTIC_ON,
-            "instance_on": cfg.MODEL.MASK_FORMER.TEST.INSTANCE_ON,
-            "panoptic_on": cfg.MODEL.MASK_FORMER.TEST.PANOPTIC_ON,
-            "test_topk_per_image": cfg.TEST.DETECTIONS_PER_IMAGE,
             "shot": cfg.DATASETS.SHOT,
             'fewshot_weight': cfg.MODEL.MASK_FORMER.FEWSHOT_WEIGHT,
         }
@@ -190,16 +147,15 @@ class mask2_oracle_ori_fsloss(nn.Module):
             list[dict]:
                 each dict has the results for one image. The dict contains the following keys:
 
+                training:
                 * "sem_seg":
                     A Tensor that represents the
                     per-pixel segmentation prediced by the head.
                     The prediction has shape KxHxW that represents the logits of
                     each class for each pixel.
-                * "panoptic_seg":
-                    A tuple that represent panoptic output
-                    panoptic_seg (Tensor): of shape (height, width) where the values are ids for each segment.
-                    segments_info (list[dict]): Describe each segment in `panoptic_seg`.
-                        Each dict contains keys "id", "category_id", "isthing".
+                testing:
+                * "few_shot_result"
+                     A Tensor that represents the forground score and background score.
         """
         images = [x["image"].to(self.device) for x in batched_inputs]
         images = [(x - self.pixel_mean) / self.pixel_std for x in images]
@@ -217,7 +173,7 @@ class mask2_oracle_ori_fsloss(nn.Module):
         labels = label.clone()
         labels[label == 255] = 0
 
-        outputs = self.sem_seg_head(features)   # supfeatures[0], sup_label[0]
+        outputs = self.sem_seg_head(features)
         mask_pred_results = outputs["pred_masks"].sigmoid()
         
         # upsample masks
@@ -262,27 +218,7 @@ class mask2_oracle_ori_fsloss(nn.Module):
         else:
 
             processed_results = {"few_shot_result": out_all}
-
-            # savepath = '/home/siyujiao/few_shot_seg/2branch/z/'
-            # if not os.path.exists(savepath):
-            #     os.makedirs(savepath)
-
-            # subcls_lists = [x['subcls_list'] for x in batched_inputs]
-            # im_dirs = [x["file_name"].split('/')[-1].split('.')[0] for x in batched_inputs]
-            # for subcls_list, im_dir, mask_pred_result in zip(subcls_lists, im_dirs, mask_pred_results):
-            #     # print(subcls_list, subcls_list[0], type(subcls_list[0]), str(subcls_list[0]))
-            #     savepath_k = os.path.join(savepath, str(subcls_list[0]), im_dir)
-            #     if not os.path.exists(savepath_k):
-            #         os.makedirs(savepath_k)
-
-            #     img = cv2.imread('/home/siyujiao/data/pascal/VOCdevkit/VOC2012/JPEGImages/' + im_dir + '.jpg')
-            #     cv2.imwrite(os.path.join(savepath_k, im_dir + '.jpg'), img)
-            #     cv2.imwrite(os.path.join(savepath_k, im_dir + '.png'), out.cpu().numpy()*255)
-
-            #     os.makedirs(os.path.join(savepath_k, 'masks'))
-            #     for i in range(mask_pred_result.shape[0]):
-            #         cv2.imwrite(os.path.join(savepath_k, 'masks', str(i) + '.png'), mask_pred_result[i].cpu().numpy()*255)
-                    
+ 
             return processed_results
 
     def prepare_targets(self, targets, images):

@@ -6,7 +6,7 @@ DATASETS:
   SPLIT: 0
   SHOT: 1
 MODEL:
-  META_ARCHITECTURE: "mask2_oracle_ori_fsloss"    # mask2_oracle_ori mask2_oracle_ori_fsloss
+  META_ARCHITECTURE: "POS"    # POS / MMFormer  
   SEM_SEG_HEAD:
     NAME: "MaskFormerHead"
     IGNORE_VALUE: 255

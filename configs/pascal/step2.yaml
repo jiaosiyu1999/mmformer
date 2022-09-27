@@ -1,13 +1,13 @@
 
-# python train.py --config-file configs/pascal/step2.yaml --num-gpus 1
+# python train_step2.py --config-file configs/pascal/step2.yaml --num-gpus 1
 
 _BASE_: Base-VOC11K-20.yaml
 DATASETS:
   SPLIT: 0
   SHOT: 1
 MODEL:
-  META_ARCHITECTURE: "new_1_sat_cLoss_new"    
-  WEIGHTS: out/pascal/step1/without_backbone/mask2_oracle_ori_fsloss/0/model_best.pth
+  META_ARCHITECTURE: "MMFormer"    # POS / MMFormer  
+  WEIGHTS: out/pascal/step1/POS/0/model_best.pth # change to your path
   SEM_SEG_HEAD:
     NAME: "MaskFormerHead"
     IGNORE_VALUE: 255

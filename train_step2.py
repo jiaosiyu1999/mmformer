@@ -1,6 +1,6 @@
 import logging
 import os, json
-# os.environ['CUDA_VISIBLE_DEVICES'] = '3' 
+# os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 from collections import OrderedDict
 import copy
 import itertools
@@ -43,12 +43,12 @@ from mask2former import (
     add_maskformer2_config,
 )
 from mask2former.data import (
-    FewShotDatasetMapper_stage2,
     FewShotDatasetMapper_stage1,
+    FewShotDatasetMapper_stage2,
+    # FewShotDatasetMapper_ori_v2,
     build_detection_train_loader,
     build_detection_test_loader,
 )
-
 
 
 logger = logging.getLogger("detectron2")
@@ -254,7 +254,7 @@ def do_train(cfg, model, resume=False, data_loaders = None, evaluators = None):
             if (
                 cfg.TEST.EVAL_PERIOD > 0
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
-                # and iteration > start_val
+                # and iteration != max_iter - 1
             ):
                 results = do_test(cfg, model, data_loaders, evaluators)
 
@@ -290,10 +290,10 @@ def setup(args):
     add_deeplab_config(cfg)
     add_maskformer2_config(cfg)
     cfg.merge_from_file(args.config_file)
-    cfg.merge_from_list(args.opts) 
+    cfg.merge_from_list(args.opts) # ['SEED', k]
     # 
     cfg.merge_from_list(add_seed(cfg))
-    cfg.merge_from_list(add_step1dir(cfg)) 
+    cfg.merge_from_list(add_step2dir(cfg)) 
     cfg.merge_from_list(add_dataset(cfg)) 
 
     cfg.freeze()
@@ -318,7 +318,6 @@ def main(args):
                 new_params[i] = saved_state_dict[i]
 
         model.load_state_dict(new_params)
-
 
     # build test set first
     data_loaders, evaluators = [], []

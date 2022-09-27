@@ -80,7 +80,7 @@ def register_all_coco(root, split, BASE_CLASS_NAMES, NOVEL_CLASS_NAMES):
         )
 
 
-_root = 'path-to-coco'
+_root = '/home/siyujiao/data/coco/coco17'
 
 for split in range(4):
     class_list, sub_list, sub_val_list = shot_generate(split, dataname='coco')

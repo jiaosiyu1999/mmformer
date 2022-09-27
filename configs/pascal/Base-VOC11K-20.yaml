@@ -14,8 +14,8 @@ MODEL:
     # NORM: "SyncBN"
     RES5_MULTI_GRID: [1, 1, 1] # not used
 DATASETS:
-  TRAIN: ("voc_fewshot_sem_seg_train_",)   # voc_fewshot_sem_seg_train_0 voc_sem_seg_train voc_fewshot_sem_seg_train_all_0
-  TEST: ("voc_fewshot_sem_seg_val_",)   ##
+  TRAIN: ("voc_fewshot_sem_seg_train_",)   
+  TEST: ("voc_fewshot_sem_seg_val_",)  
   dataname: 'pascal'
   IMGPATHROOT: /home/siyujiao/data/pascal/VOCdevkit/VOC2012
 SOLVER:

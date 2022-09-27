@@ -1,6 +1,6 @@
 import logging
-import os, json
-# os.environ['CUDA_VISIBLE_DEVICES'] = '3' 
+import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 from collections import OrderedDict
 import copy
 import itertools
@@ -45,11 +45,10 @@ from mask2former import (
 from mask2former.data import (
     FewShotDatasetMapper_stage2,
     FewShotDatasetMapper_stage1,
+    # FewShotVideoDatasetMapper,
     build_detection_train_loader,
     build_detection_test_loader,
 )
-
-
 
 logger = logging.getLogger("detectron2")
 
@@ -157,6 +156,7 @@ def get_evaluator(cfg, dataset_name, output_folder=None):
                 if cfg.TEST.DENSE_CRF
                 else None,
                 dataname = cfg.DATASETS.dataname,
+                split = cfg.DATASETS.SPLIT,
             )
         )
 
@@ -197,9 +197,9 @@ def do_test(cfg, model, data_loaders, evaluators):
 def build_train_loader(cfg):
     if cfg.INPUT.DATASET_MAPPER_NAME == "fewshot_sem":
         mapper = FewShotDatasetMapper_stage2(cfg, True)
-        # print(build_detection_train_loader(cfg, mapper=mapper))
+        # print(build_detection_train_loader(cfg, mapper=mapper)) FewShotDatasetVideoMapper
     elif cfg.INPUT.DATASET_MAPPER_NAME == "fewshot_sem_ori":
-        mapper = FewShotDatasetMapper_stage1(cfg, True)
+        mapper = FewShotDatasetMapper_stage1(cfg, True) 
     else:
         mapper = None
     return build_detection_train_loader(cfg, mapper=mapper)
@@ -254,7 +254,7 @@ def do_train(cfg, model, resume=False, data_loaders = None, evaluators = None):
             if (
                 cfg.TEST.EVAL_PERIOD > 0
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
-                # and iteration > start_val
+                # and iteration != max_iter - 1
             ):
                 results = do_test(cfg, model, data_loaders, evaluators)
 
@@ -268,17 +268,12 @@ def do_train(cfg, model, resume=False, data_loaders = None, evaluators = None):
                         best_mIoU = cur_mIoU
                         periodic_checkpointer.save('model_best')
 
-                    results_dict = json.dumps(results_dict)
-                    f = open(os.path.join(cfg.OUTPUT_DIR, 'best.json'), 'w')
-                    f.write(results_dict)
-                    f.close()
-
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
             ):
                 for writer in writers:
                     writer.write()
-            # periodic_checkpointer.step(iteration)
+            periodic_checkpointer.step(iteration)
 
 
 def setup(args):
@@ -290,12 +285,15 @@ def setup(args):
     add_deeplab_config(cfg)
     add_maskformer2_config(cfg)
     cfg.merge_from_file(args.config_file)
-    cfg.merge_from_list(args.opts) 
+    cfg.merge_from_list(args.opts) # ['SEED', k]
     # 
     cfg.merge_from_list(add_seed(cfg))
-    cfg.merge_from_list(add_step1dir(cfg)) 
-    cfg.merge_from_list(add_dataset(cfg)) 
-
+    # OUTPUT_DIR = os.path.join('out', cfg.DATASETS.dataname, cfg.MODEL.META_ARCHITECTURE, str(cfg.DATASETS.SPLIT))
+    DATASETS_TRAIN = (cfg.DATASETS.TRAIN[0] + str(cfg.DATASETS.SPLIT), )
+    DATASETS_TEST = (cfg.DATASETS.TEST[0] + str(cfg.DATASETS.SPLIT) +'_'+ str(cfg.DATASETS.SHOT) + 'shot',)
+    # 
+    print( 'DATASETS.TRAIN', DATASETS_TRAIN, 'DATASETS.TEST', DATASETS_TEST)
+    cfg.merge_from_list(['DATASETS.TRAIN', DATASETS_TRAIN, 'DATASETS.TEST', DATASETS_TEST]) # ['SEED', k]
     cfg.freeze()
     default_setup(cfg, args)
     # Setup logger for "mask_former" module
@@ -307,18 +305,20 @@ def main(args):
     cfg = setup(args)
 
     model = build_model(cfg)
-
+    new_params = model.state_dict()
+    # for i in new_params:
+    #     if 'backbone' in i:
+    #         print(i)
     if cfg.MODEL.WEIGHTS_ is not None:
         saved_state_dict = torch.load(cfg.MODEL.WEIGHTS_)['model']
         new_params = model.state_dict()
 
         for i in saved_state_dict:
             if i in new_params.keys():
-                # print('\t' + i)
+                print('\t' + i)
                 new_params[i] = saved_state_dict[i]
 
         model.load_state_dict(new_params)
-
 
     # build test set first
     data_loaders, evaluators = [], []

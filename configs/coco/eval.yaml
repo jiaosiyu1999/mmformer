@@ -1,5 +1,5 @@
 
-# python test_.py --config-file configs/coco/eval.yaml --num-gpus 1 --eval-only
+# python test.py --config-file configs/coco/eval.yaml --num-gpus 1 --eval-only
 
 
 _BASE_: Base-COCOStuff164K-171.yaml
@@ -8,8 +8,8 @@ DATASETS:
   SPLIT: 0
   SHOT: 1
 MODEL:
-  META_ARCHITECTURE: "new_1_sat_cLoss_new"    #  mask2_oracle_ori
-  WEIGHTS: pretrained-model-path
+  META_ARCHITECTURE: "POS"    # POS / MMFormer
+  WEIGHTS: pretrained-model-path 
   SEM_SEG_HEAD:
     NAME: "MaskFormerHead"
     IGNORE_VALUE: 255

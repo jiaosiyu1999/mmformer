@@ -72,12 +72,12 @@ class FewShotSemSegEvaluator(SemSegEvaluator):
     def process(self, inputs, outputs):
         """
         Args:
-            inputs: the inputs to a model.
+            inputs: the inputs of a model.
                 It is a list of dicts. Each dict corresponds to an image and
                 contains keys like "height", "width", "file_name".
-            outputs: the outputs of a model. It is either list of semantic segmentation predictions
-                (Tensor [H, W]) or list of dicts with key "sem_seg" that contains semantic
-                segmentation prediction in the same format.
+            outputs: the outputs of a model. 
+                It is either list of semantic segmentation predictions
+                (Tensor [H, W]) or list of dicts with key "'few_shot_result'".
         """
 
         in_img, in_label, out_label = [],[],[]
@@ -93,35 +93,23 @@ class FewShotSemSegEvaluator(SemSegEvaluator):
 
             output = F.interpolate(output, size=target.size()[1:], mode='bilinear', align_corners=True)         
             output = output.max(1)[1]
-            # output[target == 255] = 0
-            # target[target == 255] = 0
 
-            intersection, union, new_target = intersectionAndUnionGPU(output, target, 2, 255)  # f-b iou, 2指两个类，fg,bg, 255为ignore label
+            intersection, union, new_target = intersectionAndUnionGPU(output, target, 2, 255)  # f-b iou, 2:fg and bg, 255: ignore label
             intersection, union, target, new_target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy(), new_target.cpu().numpy()
             self.intersection_meter.update(intersection), self.union_meter.update(union), self.target_meter.update(new_target)
 
-            # if subcls != 1:
             self.class_intersection_meter[(subcls-1)%self.split_gap] += intersection[1]
             self.class_union_meter[(subcls-1)%self.split_gap] += union[1] 
-
-        # accuracy = sum(self.intersection_meter.val) / (sum(self.target_meter.val) + 1e-10)
 
 
     def evaluate(self):
         """
-        Evaluates standard semantic segmentation metrics (http://cocodataset.org/#stuff-eval):
+        Evaluates few shot semantic segmentation metrics (https://github.com/YanFangCS/CyCTR-Pytorch):
 
         * Mean intersection-over-union averaged across classes (mIoU)
-        * Frequency Weighted IoU (fwIoU)
+        * Frequency Weighted IoU (fbIoU)
         * Mean pixel accuracy averaged across classes (mACC)
-        * Pixel Accuracy (pACC)
         """
-
-        # if self._output_dir:
-        #     PathManager.mkdirs(self._output_dir)
-        #     file_path = os.path.join(self._output_dir, "sem_seg_predictions.json")
-        #     with PathManager.open(file_path, "w") as f:
-        #         f.write(json.dumps(self._predictions))
 
         iou_class = self.intersection_meter.sum / (self.union_meter.sum + 1e-10)
         accuracy_class = self.intersection_meter.sum / (self.target_meter.sum + 1e-10)
@@ -137,13 +125,7 @@ class FewShotSemSegEvaluator(SemSegEvaluator):
             class_iou_class.append(class_iou)
             class_miou += class_iou
         class_miou = class_miou*1.0 / len(self.class_intersection_meter)
-        # logger.info('meanIoU---Val result: mIoU {:.4f}.'.format(class_miou))
 
-        # if main_process():
-        #     logger.info('FBIoU---Val result: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'.format(mIoU, mAcc, allAcc))
-        #     for i in range(args.classes):
-        #         logger.info('Class_{} Result: iou/accuracy {:.4f}/{:.4f}.'.format(i, iou_class[i], accuracy_class[i]))
-        #     logger.info('<<<<<<<<<<<<<<<<< End Evaluation <<<<<<<<<<<<<<<<<')
 
         res = {}
         res["mIoU"] = 100 * class_miou
@@ -158,10 +140,7 @@ class FewShotSemSegEvaluator(SemSegEvaluator):
             res["FB-mIoU-{}".format(i)] = iou_class[i]
             res["FB-accuracy-{}".format(i)] = accuracy_class[i]
 
-        # if self._output_dir:
-        #     file_path = os.path.join(self._output_dir, "sem_seg_evaluation.pth")
-        #     with PathManager.open(file_path, "wb") as f:
-        #         torch.save(res, f)
+
         results = OrderedDict({"sem_seg": res})
         self._logger.info(results)
 

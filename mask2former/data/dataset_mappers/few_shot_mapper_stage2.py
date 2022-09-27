@@ -16,14 +16,14 @@ from detectron2.structures import BitMasks, Instances
 
 from mask2former.data.utils import *
 from torchvision import transforms
-import mask2former.data.transforms as tr
+# import mask2former.data.transforms as tr
 from PIL import Image
 
-__all__ = ["FewShotDatasetMapper"]
+__all__ = ["FewShotDatasetMapper_stage2"]
 
 
 
-class FewShotDatasetMapper:
+class FewShotDatasetMapper_stage2:
     """
     A callable which takes a dataset dict in Detectron2 Dataset format,
     and map it into a format used by MaskFormer for semantic segmentation.

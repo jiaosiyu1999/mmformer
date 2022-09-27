@@ -1,4 +1,4 @@
-
+# MySelfAlignLayer : self alignment block in MM-Former
 import torch, os, cv2, math
 from torch import nn
 from torch.nn import functional as F

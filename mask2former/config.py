@@ -5,7 +5,7 @@ from detectron2.config import CfgNode as CN
 
 def add_maskformer2_config(cfg):
     """
-    Add config for MASK_FORMER.
+    Add config for MASKFORMER and MASK2FORMER.
     """
     # NOTE: configs from original maskformer
     # data config

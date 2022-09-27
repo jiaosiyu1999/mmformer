@@ -15,9 +15,9 @@ MODEL:
     RES5_MULTI_GRID: [1, 1, 1] # not used
 DATASETS:
   dataname: 'coco'
-  TRAIN: ("coco_fewshot_sem_seg_train_",)   # 
-  TEST: ("coco_fewshot_sem_seg_val_",)   ##
-  IMGPATHROOT: /home/siyujiao/data/coco/coco17
+  TRAIN: ("coco_fewshot_sem_seg_train_",)   
+  TEST: ("coco_fewshot_sem_seg_val_",)   
+  IMGPATHROOT: /home/siyujiao/data/coco/coco17  # change to your path
 
 SOLVER:
   IMS_PER_BATCH: 32
