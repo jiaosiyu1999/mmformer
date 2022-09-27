@@ -19,7 +19,7 @@ git reset --hard 932f25ad38768d
 
 ### List Preparation
 
-+ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `list`
++ Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `./list/`
 
 ### Data Preparation
 
