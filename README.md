@@ -31,10 +31,6 @@
   ```
 
   ```shell
-  **Note**: Using the latest version of detectron2 may cause weight loading failure. Please use the following command to return the version:
-```
-git reset --hard 932f25ad38768d
-```
 
   git clone https://github.com/facebookresearch/detectron2.git
   cd detectron2
@@ -48,7 +44,12 @@ git reset --hard 932f25ad38768d
   conda install -c conda-forge opencv timm
   conda install scipy 
   ```
-  
+ 
+   **Note**: Using the latest version of detectron2 may cause weight loading failure. Please use the following command to return the version:
+  ```
+  git reset --hard 932f25ad38768d
+  ```
+
 #### Build Dependencies
 
 ```
