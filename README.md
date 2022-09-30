@@ -1,9 +1,6 @@
 # Mask Matching Transformer for Few-Shot Segmentation
 
 
-# Usage
-
-
 
 #### Pre-requests
 
@@ -59,11 +56,11 @@ bash make.sh
 
 
 
-### List Preparation
+#### List Preparation
 
 + Please add [file](https://drive.google.com/file/d/1kkBOtL_Ujd-bAkGXADYFaOivTl1WD4b_/view?usp=sharing) to prepare `./list/`
 
-### Data Preparation
+#### Data Preparation
 
 + Please refer to [CyCTR](https://github.com/YanFangCS/CyCTR-Pytorch) to prepare the datasets 
 ```
@@ -91,7 +88,7 @@ python prepare_coco_data.py
 ```
 to prepare COCO-20^i data.
 
-### Train
+#### Train
 Run this command for training:
 ```
     python TRAIN.py --config-file configs/DATASET/STEP.yaml
@@ -109,7 +106,7 @@ For example
 
 
 
-### Test Only
+#### Test Only
 Modify `eval.yaml` file (`DATASETS.SPLIT`, `MODEL.META_ARCHITECTURE` and `MODEL.WEIGHTS`)
 Run the following command: 
 ```
@@ -121,5 +118,5 @@ For example,
     python test.py --config-file configs/pascal/eval.yaml --num-gpus 1 --eval-only
 ```
 
-### Pretrained models
+#### Pretrained models
 [models](https://drive.google.com/drive/folders/1D4EiAqyeejQnxGydDapflTABXeYBplqK?usp=sharing)
