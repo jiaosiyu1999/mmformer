@@ -268,10 +268,10 @@ def do_train(cfg, model, resume=False, data_loaders = None, evaluators = None):
                         best_mIoU = cur_mIoU
                         periodic_checkpointer.save('model_best')
 
-                    results_dict = json.dumps(results_dict)
-                    f = open(os.path.join(cfg.OUTPUT_DIR, 'best.json'), 'w')
-                    f.write(results_dict)
-                    f.close()
+                        results_dict = json.dumps(results_dict)
+                        f = open(os.path.join(cfg.OUTPUT_DIR, 'best.json'), 'w')
+                        f.write(results_dict)
+                        f.close()
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
